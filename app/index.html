@@ -1,110 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Palmline Cover Studio — GTA-style cover art maker</title>
-<meta name="description" content="Turn your photo and a caption into GTA-style multi-panel cover art, exported as a PNG. Runs entirely offline.">
+<title>Palmline Cover Studio — GTA-style poster maker</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
-    <span class="brand-mark" aria-hidden="true">PL</span>
+    <span class="brand-mark">P</span>
     <div>
-      <h1>Palmline Cover Studio</h1>
-      <p>Your photo. Your caption. One striking poster.</p>
+      <h1>PALMLINE <span>Cover Studio</span></h1>
+      <p>Turn your photos into GTA-style poster art</p>
     </div>
   </div>
   <div class="top-actions">
-    <button id="btn-random" type="button" title="Shuffle layout, grade and title style">Shuffle look</button>
-    <button id="btn-export" type="button" class="primary">Export PNG</button>
+    <label class="upload-btn">Add photos
+      <input type="file" id="uploadInput" accept="image/*" multiple hidden>
+    </label>
+    <button type="button" id="exportBtn" class="export-btn">Export PNG</button>
   </div>
 </header>
 
 <main class="workspace">
-  <aside class="controls" aria-label="Cover controls">
-    <section class="group">
-      <h2>1 · Photo</h2>
-      <div class="photo-row">
-        <label class="upload-btn">
-          Upload a photo
-          <input id="file-photo" type="file" accept="image/*" multiple hidden>
-        </label>
-        <button id="btn-fill-all" type="button" title="Put the selected photo in every panel">Fill all panels</button>
+  <aside class="toolbar">
+    <section>
+      <h2>Layout</h2>
+      <div id="layoutBar" class="chip-row"></div>
+    </section>
+    <section>
+      <h2>Colour grade</h2>
+      <div id="gradeBar" class="chip-row"></div>
+    </section>
+    <section>
+      <h2>Title style</h2>
+      <div id="styleBar" class="chip-row"></div>
+    </section>
+    <section>
+      <h2>Caption</h2>
+      <label class="field">Title
+        <input type="text" id="titleInput" maxlength="40" autocomplete="off">
+      </label>
+      <label class="field">Subtitle
+        <input type="text" id="subtitleInput" maxlength="60" autocomplete="off">
+      </label>
+    </section>
+    <section>
+      <h2>Cast tags</h2>
+      <label class="field">Tag 1 <input type="text" class="tag-input" maxlength="24" autocomplete="off"></label>
+      <label class="field">Tag 2 <input type="text" class="tag-input" maxlength="24" autocomplete="off"></label>
+      <label class="field">Tag 3 <input type="text" class="tag-input" maxlength="24" autocomplete="off"></label>
+    </section>
+    <section>
+      <h2>Selected panel</h2>
+      <p id="panelLabel" class="panel-label">Panel 1</p>
+      <label class="field">Zoom
+        <input type="range" id="zoomSlider" min="1" max="3.5" step="0.05" value="1">
+      </label>
+      <p class="hint">Click a panel to pick it. Drag to pan the photo, scroll to zoom.</p>
+      <button type="button" id="fillAllBtn" class="ghost-btn">Fill all panels with this photo</button>
+    </section>
+    <section>
+      <h2>Export size</h2>
+      <div id="sizeBar" class="chip-row">
+        <button type="button" data-size="landscape">1920 × 1080</button>
+        <button type="button" data-size="portrait">1080 × 1350</button>
+        <button type="button" data-size="square">1080 × 1080</button>
       </div>
-      <div id="photo-strip" class="photo-strip" role="listbox" aria-label="Photos"></div>
-      <p class="hint">Photos stay on your machine — nothing is uploaded. Click a photo to put it in the selected panel.</p>
-    </section>
-
-    <section class="group">
-      <h2>2 · Layout</h2>
-      <div id="layout-grid" class="layout-grid"></div>
-    </section>
-
-    <section class="group">
-      <h2>3 · Colour grade</h2>
-      <div id="grade-grid" class="grade-grid"></div>
-    </section>
-
-    <section class="group">
-      <h2>4 · Lettering</h2>
-      <label class="field">
-        <span>Title</span>
-        <input id="input-title" type="text" value="PALMLINE" maxlength="24" autocomplete="off">
-      </label>
-      <label class="field">
-        <span>Subtitle</span>
-        <input id="input-subtitle" type="text" value="VICE CITY • 2026" maxlength="48" autocomplete="off">
-      </label>
-      <div class="title-styles" id="title-styles" role="radiogroup" aria-label="Title style"></div>
-      <label class="field">
-        <span>Cast tags</span>
-        <input class="input-tag" type="text" value="THE DRIVER" maxlength="18" autocomplete="off">
-        <input class="input-tag" type="text" value="THE HEIST" maxlength="18" autocomplete="off">
-        <input class="input-tag" type="text" value="THE GETAWAY" maxlength="18" autocomplete="off">
-      </label>
-      <label class="field">
-        <span>Billing block</span>
-        <input id="input-billing" type="text" value="PALMLINE PICTURES PRESENTS" maxlength="64" autocomplete="off">
-      </label>
-    </section>
-
-    <section class="group">
-      <h2>5 · Selected panel</h2>
-      <p class="hint" id="panel-label">Panel 1 of 4 — click a panel on the cover to select it, then drag it to crop.</p>
-      <label class="field slider-field">
-        <span>Zoom <output id="zoom-value">100%</output></span>
-        <input id="zoom-slider" type="range" min="100" max="300" value="100" step="1">
-      </label>
-      <div class="panel-actions">
-        <button id="btn-panel-reset" type="button">Reset crop</button>
-        <button id="btn-panel-photo" type="button">Next photo in panel</button>
-      </div>
-    </section>
-
-    <section class="group">
-      <h2>6 · Export</h2>
-      <div class="size-grid" id="size-grid" role="radiogroup" aria-label="Export size"></div>
-      <button id="btn-export-2" type="button" class="primary wide">Export PNG</button>
-      <p class="hint">The export is the same cover you see, rendered at full size. No watermark, no account, no upload.</p>
     </section>
   </aside>
 
-  <section class="stage" aria-label="Live preview">
-    <div class="canvas-wrap">
-      <canvas id="stage" width="1080" height="1080"></canvas>
-      <div id="stage-badge" class="stage-badge">LIVE PREVIEW</div>
+  <section class="stage-wrap">
+    <div class="stage-frame">
+      <canvas id="stage" width="1920" height="1080"></canvas>
+      <span class="live-badge">LIVE PREVIEW</span>
     </div>
-    <p class="stage-hint">Click a panel to select it · drag inside it to crop · scroll to zoom · the cover updates live.</p>
+    <p class="stage-note">A Palmline Original — your photos never leave this machine.</p>
   </section>
 </main>
 
-<footer class="footnote">
-  <p>Palmline Cover Studio is an original design. No Rockstar Games logo, artwork, character or font is used. Fonts: Anton &amp; Archivo (SIL Open Font License, see <code>fonts/OFL.txt</code>). Sample photos were made with an image model for make.fun.</p>
+<footer class="tray-wrap">
+  <h2>Photos</h2>
+  <div id="tray" class="tray"></div>
 </footer>
 
-<script type="module" src="src/main.js"></script>
+<script type="module" src="src/shots.js"></script>
 </body>
 </html>

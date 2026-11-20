@@ -1,62 +1,49 @@
 # Palmline Cover Studio
 
-![gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)
-![rank](https://make.fun/badge/gta6-cover-art-01/robbygmc/gta6-cover-art/rank.svg)
-![reward](https://make.fun/badge/gta6-cover-art-01/robbygmc/gta6-cover-art/reward.svg)
+[![make.fun](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
+[![rank](https://make.fun/badge/gta6-cover-art-01/robbygmc/gta6-cover-art/rank.svg)](https://make.fun/bounty/gta6-cover-art-01)
+[![reward](https://make.fun/badge/gta6-cover-art-01/robbygmc/gta6-cover-art/reward.svg)](https://make.fun/bounty/gta6-cover-art-01)
 
-Turn your own photo and a caption into GTA-style multi-panel cover art —
-a poster maker for the streets of Vice City, running entirely offline in
-your browser. Pick a layout, pick a colour grade, crop each panel by
-dragging, write the title, and export a share-ready PNG.
+Turn your own photos into GTA-style poster art. **Palmline Cover Studio** is
+an offline web app: pick a layout, drop in your photos, crop each panel,
+choose a sunset or neon colour grade, write your caption and cast tags, and
+export a finished cover as a PNG to share.
 
 ## What it does
 
-- **8 poster layouts** — Vice Grid (2×2), Hero Left, Hero Right, Strip,
-  Palmline (slanted diagonal bands), Billboard, Triptych and Mosaic.
-  Slanted parallelogram panels, like the posters.
-- **9 colour grades** — Sunset, Neon, Vice, Dusk, Heat, Noir, Palm,
-  Chrome and Midnight, applied with canvas filters, gradient overlays
-  and a vignette.
-- **Any photo** — upload from your machine (nothing is ever uploaded
-  anywhere), or start from the two built-in sample photos plus a
-  sunset-street scene the app draws itself. One photo can fill every
-  panel, or each panel can hold a different photo.
-- **Crop per panel** — click a panel to select it, drag to pan, scroll or
-  use the slider to zoom, each panel independently.
-- **Big retro-chrome lettering** — an editable title in three styles
-  (Chrome, Sunset, Outline) with layered 3D offsets and auto-fit, an
-  editable subtitle, three editable cast tags, an editable billing block
-  and a round Palmline seal.
-- **Export PNG** in the three common post sizes: **1080×1080**,
-  **1080×1350** and **1920×1080**.
+- **8 multi-panel layouts** — Vice Grid, Hero Left, Hero Right, Strip,
+  Palmline (diagonal sash), Billboard, Triptych and Mosaic, with leaning
+  dividers and poster gutters.
+- **9 colour grades** — Sunset, Neon, Vice, Dusk, Heat, Noir, Palm, Chrome
+  and Midnight, each a tuned filter + tint + vignette recipe.
+- **3 title styles** — Chrome, Sunset and Outline, with layered 3D
+  extrusion, gradient fills and auto-fit sizing, plus a subtitle, billing
+  block and the Palmline seal.
+- **Any photo** — upload your own (they never leave your machine), crop and
+  position each panel by dragging and scrolling, fill every panel with one
+  photo or use a different photo per panel. Two sample photos and a drawn
+  sunset-street scene are built in.
+- **Fast export** — one click exports a PNG in **1920 × 1080**,
+  **1080 × 1350** or **1080 × 1080**.
 
-## Run it
+## Try it
 
 ```sh
-node serve.ts
-# open http://localhost:8080
+node serve.ts            # serves app/ at http://localhost:8080
 ```
 
-No build step, no network: `app/` is plain static files. Fonts are
-bundled under `app/fonts/` (Anton and Archivo, SIL Open Font License —
-see `app/fonts/OFL.txt`). No Rockstar logo, artwork, character or font
-is used anywhere; the design is original.
+Everything is static files under `app/` — no build step, no network, no
+tracking. Fonts (Anton, Archivo) are vendored under `app/fonts/` under the
+SIL Open Font License. Nothing here copies Rockstar Games: no logos,
+wordmarks, artwork, characters or fonts from any game.
 
-## Hand it in
+## Entry
+
+Built for the make.fun bounty
+[Make GTA 6 Cover Art](https://make.fun/bounty/gta6-cover-art-01).
+`main.ts` hands the app in: it copies `app/` and `screenshots/` to
+`/output` and writes `dossier.json` with the vendored make.fun library.
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
-
-`main.ts` copies `app/` and `screenshots/` to the output directory and
-writes `dossier.json` with the vendored make.fun library.
-
-## Screenshots
-
-`1-cover-landscape` is the best exported cover (1920×1080), `2-editor`
-shows the editor with a photo loaded, `3-cover-portrait` and
-`4-cover-square` show the other two export sizes.
-
-## License
-
-MIT — see [LICENSE](LICENSE).

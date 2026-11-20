@@ -1,95 +1,60 @@
 // Palmline Cover Studio — deterministic screenshot mode.
-//
-// Opened with ?shot=cover or ?shot=editor the app renders one fixed
-// picture and raises window.__shotReady when it is done, so a headless
-// browser can capture exactly the same image every time:
-//
-//   ?shot=cover&photo=pier&caption=Sunset%20Heist&layout=palmline
-//     &grade=neon&size=landscape
-//       the exported cover alone, full-window; the real export is also
-//       saved as window.__exportDataURL (a PNG data URL).
-//   ?shot=editor&photo=boulevard&caption=Boulevard%20Queen
-//       the editor with that photo loaded and that caption set.
-//
-// Parameters, all optional:
-//   photo    pier | boulevard | sunset   (default pier)
-//   caption  the title text             (default: the editor's title)
-//   layout   any layout id              (default: the editor's layout)
-//   grade    any grade id               (default: the editor's grade)
-//   size     square | portrait | landscape (default landscape in cover
-//            mode, the editor's size in editor mode)
-//   titleStyle  chrome | sunset | outline
+// ?shot=cover|editor&photo=&caption=&layout=&grade=&size=
+// Cover mode renders one export-size cover on #stage and publishes it as
+// window.__exportDataURL for the screenshot tooling. Editor mode opens the
+// full editor with the requested state applied. Either way the page sets
+// window.__shotReady once fonts and photos are loaded and drawn.
 
-import { drawCover, ensureFonts, EXPORT_SIZES } from './cover.js';
+import { state, SIZES, render, initEditor, syncToolbar } from './editor.js';
+import { LAYOUTS } from './panels.js';
+import { GRADES } from './grades.js';
+import { TITLE_STYLES } from './render.js';
 
-const PHOTO_IDS = ['pier', 'boulevard', 'sunset-street'];
-
-/** Pick the sample photo the query names, falling back to the first. */
-function photoIndexFor(api, name) {
-  const wanted = name === 'sunset' ? 'sunset-street' : name;
-  const at = api.state.photos.findIndex((p) => p.id === wanted);
-  if (at !== -1) return at;
-  const first = api.state.photos.findIndex((p) => PHOTO_IDS.includes(p.id));
-  return first === -1 ? 0 : first;
-}
-
-/** Apply the shared query parameters to the state. */
-function applyParams(api, query) {
-  const s = api.state;
-  if (query.get('photo')) {
-    const index = photoIndexFor(api, query.get('photo'));
-    for (const view of s.panels) view.photo = index;
-    s.selected = 0;
+function applyParams(q) {
+  const photo = q.get('photo');
+  if (photo) {
+    const idx = state.photos.findIndex((p) => p.id === photo);
+    if (idx >= 0) state.assign = state.assign.map(() => idx);
   }
-  if (query.get('caption')) s.title = query.get('caption');
-  if (query.get('layout')) s.layout = query.get('layout');
-  if (query.get('grade')) s.grade = query.get('grade');
-  if (query.get('titleStyle')) s.titleStyle = query.get('titleStyle');
-  if (query.get('subtitle')) s.subtitle = query.get('subtitle');
+  const caption = q.get('caption');
+  if (caption) state.title = caption;
+  const layout = q.get('layout');
+  if (layout && LAYOUTS[layout]) state.layout = layout;
+  const grade = q.get('grade');
+  if (grade && GRADES[grade]) state.grade = grade;
+  const style = q.get('style');
+  if (style && TITLE_STYLES[style]) state.titleStyle = style;
+  const size = q.get('size');
+  if (size && SIZES[size]) state.size = size;
 }
 
-/** The cover shot: the export itself, drawn full-window. */
-async function coverShot(api, query) {
-  const sizeKey = query.get('size') || 'landscape';
-  const size = EXPORT_SIZES[sizeKey] ?? EXPORT_SIZES.landscape;
-  api.state.size = sizeKey in EXPORT_SIZES ? sizeKey : 'landscape';
-  applyParams(api, query);
-  await ensureFonts();
-  document.body.classList.add('shot-cover');
+async function runShotMode() {
+  const q = new URLSearchParams(location.search);
+  const mode = q.get('shot');
+  if (!mode) return false;
+  await initEditor();
+  applyParams(q);
+  render();
+  syncToolbar();
   const stage = document.getElementById('stage');
-  stage.width = size.width;
-  stage.height = size.height;
-  drawCover(stage.getContext('2d'), api.state, size.width, size.height);
-  // The genuine export, as a PNG data URL, for the screenshot tooling.
-  window.__exportDataURL = stage.toDataURL('image/png');
-  window.__exportSize = { width: size.width, height: size.height };
-  window.__shotReady = true;
-}
-
-/** The editor shot: the app at work with a photo loaded. */
-async function editorShot(api, query) {
-  applyParams(api, query);
-  if (query.get('size') && EXPORT_SIZES[query.get('size')]) api.state.size = query.get('size');
-  await ensureFonts();
-  api.buildPhotoStrip();
-  api.renderPreview();
-  window.__shotReady = true;
-}
-
-/**
- * Run the screenshot mode named by ?shot=, or do nothing when the page
- * was opened normally. Returns true when a shot mode ran.
- */
-export async function runShotMode(api) {
-  const query = new URLSearchParams(window.location.search);
-  const mode = query.get('shot');
   if (mode === 'cover') {
-    await coverShot(api, query);
-    return true;
+    document.body.classList.add('shot-cover');
+    await document.fonts.ready;
+    render();
+    const size = SIZES[state.size];
+    window.__exportSize = { width: size.w, height: size.h };
+    window.__exportDataURL = stage.toDataURL('image/png');
   }
-  if (mode === 'editor') {
-    await editorShot(api, query);
-    return true;
-  }
-  return false;
+  window.__shotReady = true;
+  return true;
+}
+
+// Entry point: shot mode when ?shot= is present, plain editor otherwise.
+if (new URLSearchParams(location.search).get('shot')) {
+  runShotMode().catch((err) => {
+    console.error('shot mode failed', err);
+    window.__shotReady = false;
+  });
+} else {
+  initEditor().catch((err) => console.error('editor failed to start', err));
 }
